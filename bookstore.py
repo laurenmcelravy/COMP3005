@@ -3,6 +3,8 @@ import datetime
 from config import config
 
 def queryBookstore(query):
+    #queries database (DQL)
+
     connection = None
     #print("query")
     try: 
@@ -26,6 +28,8 @@ def queryBookstore(query):
             connection.close()
 
 def manipulateBookstore(query):
+    #queries database (DML)
+
     connection = None
     #print("query")
     try: 
@@ -68,6 +72,7 @@ def registerUser():
     correct = False
     while correct == False:
         print("     User Registration")
+        #get user input for registration
         username = input("     email (this will be your username): ")
         fName = input("     First Name: ")
         lName = input("     Last Name: ")
@@ -100,7 +105,7 @@ def registerUser():
                 print("     There is already an account registered to that email.")
                 print("     You will be logged into that account.")
             else:
-                manipulateBookstore("INSERT INTO BankAccount(balance) VALUES (999999.99)")
+                manipulateBookstore("INSERT INTO BankAccount(balance) VALUES (0)")
                 result = queryBookstore("SELECT MAX(number) FROM BankAccount")
                 manipulateBookstore("INSERT INTO RegisteredUser VALUES ('"+username+"', '"+fName+"', '"+lName+"', '"+password+"', 'user', '"+streetNumber+"', '"+streetName+"', '"+postalCode+"', '"+province+"', '"+country+"', '"+city+"', "+str(result[0][0])+");")
                 manipulateBookstore("UPDATE BankAccount SET balance=0 WHERE number="+str(result[0][0])+";")
@@ -619,16 +624,4 @@ else:
             print("     Please enter an option (1-8): ")
             print()
 
-# name = input("Enter name:")
-# print("name is: " + name)
-
-#print("main")
-# print(queryBookstore("SELECT * from bankaccount")) 
-# print(type(queryBookstore("SELECT * from bankaccount"))) #list
-# print(queryBookstore("SELECT * from bankaccount")[0])
-# print(type(queryBookstore("SELECT * from bankaccount")[0])) #tuple
-
-# print(list(queryBookstore("SELECT * from bankaccount")[0])) #tuple to list 
-# print((queryBookstore("SELECT * from bankaccount")[0])[1]) #single value 
-# print((queryBookstore("SELECT * from bankaccount")[0])[1]+1000000000)  
 
