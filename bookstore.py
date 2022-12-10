@@ -108,7 +108,6 @@ def registerUser():
                 manipulateBookstore("INSERT INTO BankAccount(balance) VALUES (0)")
                 result = queryBookstore("SELECT MAX(number) FROM BankAccount")
                 manipulateBookstore("INSERT INTO RegisteredUser VALUES ('"+username+"', '"+fName+"', '"+lName+"', '"+password+"', 'user', '"+streetNumber+"', '"+streetName+"', '"+postalCode+"', '"+province+"', '"+country+"', '"+city+"', "+str(result[0][0])+");")
-                manipulateBookstore("UPDATE BankAccount SET balance=0 WHERE number="+str(result[0][0])+";")
         else:
             correct = False
         print()
@@ -222,7 +221,6 @@ def addBook():
             publishers = queryBookstore("SELECT email FROM Publisher")
             uPublisher = True
             for k in range(0, len(publishers)):
-                #print(publishers[k][0])
                 if emailP == publishers[k][0]:
                     uPublisher = False
             if uPublisher == True:
@@ -296,7 +294,7 @@ def salesPerAuthor():
     print("     SALES PER AUTHOR REPORT")
     print()
     for i in range(0, len(authors)):
-        books = queryBookstore("SELECT * FROM Book, AuthorBook WHERE Book.isbn = AuthorBook.isbn AND AuthorBook.authorID='"+authors[i][0]+"'")
+        books = queryBookstore("SELECT * FROM Book JOIN AuthorBook WHERE Book.isbn = AuthorBook.isbn AND AuthorBook.authorID='"+authors[i][0]+"'")
         print("          AUTHOR: "+authors[i][1]+" "+authors[i][2])
         sales = 0
         percentage = 0
@@ -348,7 +346,7 @@ def authorSearch(cart):
     
     if matches!=[] :
         for i in range (0, len(matches)):
-            books = queryBookstore("SELECT * FROM Book, AuthorBook WHERE Book.isbn = AuthorBook.isbn AND AuthorBook.authorID='"+matches[i][0]+"'")
+            books = queryBookstore("SELECT * FROM Book JOIN AuthorBook WHERE Book.isbn = AuthorBook.isbn AND AuthorBook.authorID='"+matches[i][0]+"'")
             
             for j in range(0, len(books)):
 
@@ -480,7 +478,7 @@ def checkout(user, cart):
     print()
     x = datetime.datetime.now()
     for i in range(1, len(cart)+1):
-        author = queryBookstore("SELECT * FROM Author, AuthorBook WHERE Author.email = AuthorBook.authorID AND AuthorBook.isbn='"+cart[i-1][0]+"'")
+        author = queryBookstore("SELECT * FROM Author JOIN AuthorBook WHERE Author.email = AuthorBook.authorID AND AuthorBook.isbn='"+cart[i-1][0]+"'")
         print("     "+str(i)+". "+cart[i-1][3]+"  BY "+author[0][1]+" "+author[0][2]+" A "+cart[i-1][1]+" NOVEL")
         print("          Price: "+str(cart[i-1][7]))
         print()
