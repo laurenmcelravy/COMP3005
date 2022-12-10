@@ -23,3 +23,13 @@ vs. expenditures, sales per genres, sales per author, etc.. The application shou
 place orders for new books if the remaining quantity is less than a given threshold (e.g., 10 books). This is done
 by sending an email to the publisher of the limited books to order a number of books equal to how many books
 were sold in the previous month (you do not have to implement the email sending component).
+
+# Instructions to Run Application
+
+To run this application python 3, pyscopg2 and postgresql is required. 
+(To download psycopg2 follow https://www.postgresqltutorial.com/postgresql-python/connect/)
+
+1. Create a database called bookstore in postgresql
+2. Edit database.ini to the your postgresql information (password and database name)
+3. In PostgreSQL run projectDDL.sql 
+4. Run bookstore.py in an IDE and begin using the application. 
