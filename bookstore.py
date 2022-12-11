@@ -21,8 +21,8 @@ def queryBookstore(query):
         cursor.close()
         return result
     except(Exception, psycopg2.DatabaseError) as error:
-        print(error)
-        return(error)
+        #print(error)
+        return(False)
     finally:
         if connection is not None:
             connection.close()
@@ -48,8 +48,8 @@ def manipulateBookstore(query):
         cursor.close()
         return 
     except(Exception, psycopg2.DatabaseError) as error:
-        print(error)
-        return(error)
+        #print(error)
+        return(False)
     finally:
         if connection is not None:
             connection.close()
@@ -77,12 +77,7 @@ def registerUser():
         fName = input("     First Name: ")
         lName = input("     Last Name: ")
         password = input("     Password: ")
-        streetNumber = input("     Street Number: ")
-        streetName = input("     Street Name: ")
-        postalCode = input("     Postal Code: ")
-        province = input("     Province: ")
-        country = input("     Country: ")
-        city = input("     City: ")
+        address = input("     Full Address: ")
         print()
         print("     Please confirm the following information is correct.")
         print("---------------------------------------------------------")
@@ -90,12 +85,7 @@ def registerUser():
         print("     First Name = "+fName)
         print("     Last Name = "+lName)
         print("     password = "+password)
-        print("     Street Number = "+streetNumber)
-        print("     Street Name = "+streetName)
-        print("     Postal Code = "+postalCode)
-        print("     Province = "+province)
-        print("     Country = "+country)
-        print("     City = "+city)
+        print("     Full Address = "+address)
         print("---------------------------------------------------------")
         confirm = input(" Confirm Here (y for yes, any key to restart): ")
         if confirm == "y":
@@ -107,7 +97,11 @@ def registerUser():
             else:
                 manipulateBookstore("INSERT INTO BankAccount(balance) VALUES (0)")
                 result = queryBookstore("SELECT MAX(number) FROM BankAccount")
-                manipulateBookstore("INSERT INTO RegisteredUser VALUES ('"+username+"', '"+fName+"', '"+lName+"', '"+password+"', 'user', '"+streetNumber+"', '"+streetName+"', '"+postalCode+"', '"+province+"', '"+country+"', '"+city+"', "+str(result[0][0])+");")
+                check = manipulateBookstore("INSERT INTO RegisteredUser VALUES ('"+username+"', '"+fName+"', '"+lName+"', '"+password+"', 'user', '"+address+"', "+str(result[0][0])+");")
+                if (check == False):
+                    correct = False 
+                    print("     An error occurred. Please try again.")
+                    print()
         else:
             correct = False
         print()
@@ -195,7 +189,7 @@ def addBook():
         confirm = input("     Is this information correct (y for Yes): ")
         print()
         if confirm == "y":
-
+            correct = True
             #check for existing book
             eBooks = queryBookstore("SELECT isbn FROM Book")
             uBook = True
@@ -204,8 +198,13 @@ def addBook():
                 if isbn == eBooks[i][0]:
                     uBook = False
             if uBook == True:
-                manipulateBookstore("INSERT INTO Book VALUES ('"+isbn+"', '"+genre+"', "+str(numPages)+", '"+title+"', "+str(numSold)+", "+str(quantity)+", "+str(buyPrice)+", "+str(sellPrice)+", "+str(year)+", "+str(percentage)+")")
-                manipulateBookstore("INSERT INTO StoreOrder(quantity, date, ISBN) VALUES ("+quantity+", '"+str(x.strftime("%x"))+"', '"+isbn+"')")
+                check1 = manipulateBookstore("INSERT INTO Book VALUES ('"+isbn+"', '"+genre+"', "+str(numPages)+", '"+title+"', "+str(numSold)+", "+str(quantity)+", "+str(buyPrice)+", "+str(sellPrice)+", "+str(year)+", "+str(percentage)+")")
+                check2 = manipulateBookstore("INSERT INTO StoreOrder(quantity, date, ISBN) VALUES ("+quantity+", '"+str(x.strftime("%x"))+"', '"+isbn+"')")
+                if (check1==False or check2==False):
+                    correct = False
+                    print("     An error occurred please try again.")
+                    print()
+                    break
 
             #check for existing author 
             authors = queryBookstore("SELECT email FROM Author")
@@ -215,7 +214,12 @@ def addBook():
                 if emailA == authors[j][0]:
                     uAuthor = False
             if uAuthor == True:
-                manipulateBookstore("INSERT INTO Author VALUES ('"+emailA+"', '"+fName+"', '"+lName+"')")
+                check3 = manipulateBookstore("INSERT INTO Author VALUES ('"+emailA+"', '"+fName+"', '"+lName+"')")
+                if (check3 == False):
+                    correct = False
+                    print("     An error occurred please try again.")
+                    print()
+                    break
 
             #check for existing publisher 
             publishers = queryBookstore("SELECT email FROM Publisher")
@@ -226,18 +230,32 @@ def addBook():
             if uPublisher == True:
                 manipulateBookstore("INSERT INTO BankAccount(balance) VALUES (0)")
                 result = queryBookstore("SELECT MAX(number) FROM BankAccount")
-                manipulateBookstore("INSERT INTO Publisher VALUES ('"+emailP+"', '"+name+"', '"+address+"', '"+phoneNumber+"', "+str(result[0][0])+")")
+                check5 = manipulateBookstore("INSERT INTO Publisher VALUES ('"+emailP+"', '"+name+"', '"+address+"', '"+phoneNumber+"', "+str(result[0][0])+")")
+                if (check5 == False):
+                    correct = False
+                    print("     An error occurred please try again.")
+                    print()
+                    break
 
             if (uBook == False) :
                 if (uAuthor == True):
-                    manipulateBookstore("INSERT INTO AuthorBook VALUES ('"+emailA+"', '"+isbn+"')")
+                    check6 = manipulateBookstore("INSERT INTO AuthorBook VALUES ('"+emailA+"', '"+isbn+"')")
                 if (uPublisher == True):
-                    manipulateBookstore("INSERT INTO PublisherBook VALUES ('"+emailP+"', '"+isbn+"')")
+                    check7 = manipulateBookstore("INSERT INTO PublisherBook VALUES ('"+emailP+"', '"+isbn+"')")
+                if (check6 == False or check7 == False):
+                    correct = False
+                    print("     An error occurred please try again.")
+                    print()
+                    break
             else :
-                manipulateBookstore("INSERT INTO AuthorBook VALUES ('"+emailA+"', '"+isbn+"')")
-                manipulateBookstore("INSERT INTO PublisherBook VALUES ('"+emailP+"', '"+isbn+"')")
+                check8 = manipulateBookstore("INSERT INTO AuthorBook VALUES ('"+emailA+"', '"+isbn+"')")
+                check9 = manipulateBookstore("INSERT INTO PublisherBook VALUES ('"+emailP+"', '"+isbn+"')")
+                if (check8 == False or check9 == False):
+                    correct = False
+                    print("     An error occurred please try again.")
+                    print()
+                    break           
             
-            correct = True
         else:
             correct = False
 
@@ -294,7 +312,7 @@ def salesPerAuthor():
     print("     SALES PER AUTHOR REPORT")
     print()
     for i in range(0, len(authors)):
-        books = queryBookstore("SELECT * FROM Book JOIN AuthorBook WHERE Book.isbn = AuthorBook.isbn AND AuthorBook.authorID='"+authors[i][0]+"'")
+        books = queryBookstore("SELECT * FROM Book JOIN AuthorBook ON Book.isbn = AuthorBook.isbn AND AuthorBook.authorID='"+authors[i][0]+"'")
         print("          AUTHOR: "+authors[i][1]+" "+authors[i][2])
         sales = 0
         percentage = 0
@@ -320,7 +338,7 @@ def titleSearch(cart):
             if (matches[i][5] != 0):
                 author = queryBookstore("SELECT authorID FROM AuthorBook WHERE isbn='"+matches[i][0]+"'")
                 publisher = queryBookstore("SELECT publisherID FROM PublisherBook WHERE isbn='"+matches[i][0]+"'")
-                print("          "+matches[i][0]+": | TITLE: "+matches[i][3]+"| AUTHOR: "+author[0][0]+"| NUMBER OF PAGES: "+str(matches[i][2])+"| GENRE: "+matches[i][1]+"| PUBLISHER"+publisher[0][0])
+                print("          "+matches[i][0]+": | TITLE: "+matches[i][3]+"| AUTHOR: "+author[0][0]+"| NUMBER OF PAGES: "+str(matches[i][2])+"| GENRE: "+matches[i][1]+"| PUBLISHER: "+publisher[0][0])
                 print("               Available Copies: "+str(matches[i][5])+" Priced at: "+str(matches[i][7]))
                 print()
 
@@ -476,55 +494,78 @@ def checkout(user, cart):
     print("--------------------------------------------------------------")
     print("     CART: ")
     print()
-    x = datetime.datetime.now()
-    for i in range(1, len(cart)+1):
-        author = queryBookstore("SELECT * FROM Author JOIN AuthorBook WHERE Author.email = AuthorBook.authorID AND AuthorBook.isbn='"+cart[i-1][0]+"'")
-        print("     "+str(i)+". "+cart[i-1][3]+"  BY "+author[0][1]+" "+author[0][2]+" A "+cart[i-1][1]+" NOVEL")
-        print("          Price: "+str(cart[i-1][7]))
+    if (cart == []):
+        print("     There are no items in your cart.")
+        ("--------------------------------------------------------------")
         print()
-    
-    #get order information 
-    order = False
-    while order == False:
-        print("     Billing/Shipping Information")
-        date = x.strftime("%x")
-        streetNum = input("     Street Number: ")
-        streetName = input("     Street Name: ")
-        postalCode = input("     Postal Code: ")
-        province = input("     Province: ")
-        city = input("     City: ")
-        country = input("     Country: ")
-        print()
-
-        print("     Payment Information")
-        creditCard = input("     Credit Card Number: ")
-        cvv = input("     CVV: ")
-        expiry = input("     expiry: ")
-        print()
-
-        correct = input("     Please confirm the above is correct (y for yes): ")
-        if correct == "y":
-            order = True
+    else :  
+        x = datetime.datetime.now()
+        for i in range(1, len(cart)+1):
+            author = queryBookstore("SELECT * FROM Author JOIN AuthorBook ON Author.email = AuthorBook.authorID AND AuthorBook.isbn='"+cart[i-1][0]+"'")
+            print("     "+str(i)+". "+cart[i-1][3]+"  BY "+author[0][1]+" "+author[0][2]+" A "+cart[i-1][1]+" NOVEL")
+            print("          Price: "+str(cart[i-1][7]))
+            print()
         
-    if order == True:
-        bookQuantity = 0
-        for j in range(0, len(cart)):
+        #get order information 
+        order = False
+        while order == False:
+            print("     Billing/Shipping Information")
+            date = x.strftime("%x")
+            address = input("     Full Address: ")
             print()
-            possible = False
-            while possible == False:
-                bookQuantity = input("     Quantity of "+cart[j][3]+": ")
-                if (int(bookQuantity) <= int(cart[j][5])):
-                    possible = True
-                    break
-            #place user order 
-            manipulateBookstore("INSERT INTO UserOrder(cost, quantity, date, streetNumber, streetName, postalCode, province, city, country, creditCard, CVV, expiry, username, ISBN) VALUES ("+str(cart[j][7])+", "+bookQuantity+", '"+date+"', '"+streetNum+"', '"+streetName+"', '"+postalCode+"', '"+province+"', '"+city+"', '"+country+"', '"+creditCard+"', '"+cvv+"', '"+expiry+"', '"+user[0][0]+"', '"+cart[0][0]+"')")
-            #update book 
-            manipulateBookstore("UPDATE Book SET numSold="+str(cart[j][4]+int(bookQuantity))+", numStock="+str(cart[j][5]-int(bookQuantity))+" WHERE isbn='"+cart[j][0]+"'")
-            #make tracker 
-            manipulateBookstore("INSERT INTO Tracker(status) VALUES ('Ordered')")
+
+            print("     Payment Information")
+            creditCard = input("     Credit Card Number: ")
+            cvv = input("     CVV: ")
+            expiry = input("     expiry: ")
+            print()
+
+            correct = input("     Please confirm the above is correct (y for yes): ")
+            if correct == "y":
+                order = True
+            
+        if order == True:
             bookQuantity = 0
-            print()
-    return
+            for j in range(0, len(cart)):
+                print()
+                possible = False
+                while possible == False:
+                    bookQuantity = input("     Quantity of "+cart[j][3]+": ")
+                    if (int(bookQuantity) <= int(cart[j][5])):
+                        possible = True
+                        break
+                    else:
+                        print("     Please Try Again. ")
+                        print("     Quantity Requested is More than Available.")
+                        print()
+                if possible == True:
+                    #place user order 
+                    check1 = manipulateBookstore("INSERT INTO UserOrder(cost, quantity, date, address, creditCard, CVV, expiry, username, ISBN) VALUES ("+str(cart[j][7])+", "+bookQuantity+", '"+date+"', '"+address+"', '"+creditCard+"', '"+cvv+"', '"+expiry+"', '"+user[0][0]+"', '"+cart[0][0]+"')")
+                    if (check1 == False):
+                        print("     An error occurred please try again.")
+                        print()
+                        return cart
+                    #update book 
+                    check2 = manipulateBookstore("UPDATE Book SET numSold="+str(cart[j][4]+int(bookQuantity))+", numStock="+str(cart[j][5]-int(bookQuantity))+" WHERE isbn='"+cart[j][0]+"'")
+                    if (check2 == False):
+                        print("     An error occurred please try again.")
+                        print()
+                        return cart                        
+                    #make tracker 
+                    check3 = manipulateBookstore("INSERT INTO Tracker(status) VALUES ('Ordered')")
+                    if (check3 == False):
+                        print("     An error occurred please try again.")
+                        print()
+                        return cart
+                    bookQuantity = 0
+                    print()
+                    print("--------------------------------------------------------------")
+                    print("     Thank You!")
+                    print("--------------------------------------------------------------")
+                    print()
+                
+            cart =  []
+        return cart 
 
 #main
 x = datetime.datetime.now()
@@ -568,7 +609,7 @@ if (verifyEmployee(currentUser[0]) == True):
         print("     (2) Add NEW BOOK ")
         print("     (3) Remove BOOK ")
         print("     (4) Sales per genre Report ")
-        print("     (5) sales per author Report ")
+        print("     (5) Sales per author Report ")
         print("     (6) Exit ")
         print()
         request = input("     Enter request: ")
@@ -615,7 +656,7 @@ else:
         elif (request == "6"):
             trackOrder(currentUser)
         elif (request == "7"):
-            checkout(currentUser, cart)
+            cart = checkout(currentUser, cart)
         elif (request == "8"):
             userQuit = True
         else:
