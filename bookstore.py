@@ -55,6 +55,8 @@ def manipulateBookstore(query):
             connection.close()
 
 def verifyEmployee(user):
+    #verify employee
+    #check the role of the user 
     if user[4] == "employee":
         employee = True
     else:
@@ -62,10 +64,13 @@ def verifyEmployee(user):
     return employee 
 
 def verifyUser(user, password):
+    # query database to see if there is a user already 
     result = queryBookstore("SELECT * FROM RegisteredUser WHERE email='"+user+"' AND password='"+password+"'")
     return result
 
 def registerUser():
+    #registering a user 
+    # adding them to the data base 
     print("---------------------------------------------------------")
     print("     REGISTERING USER")
     print()
@@ -91,14 +96,17 @@ def registerUser():
         if confirm == "y":
             correct = True
             if (verifyUser(username, password) != []):
+                # check if the username and password is already in database 
                 print()
                 print("     There is already an account registered to that email.")
                 print("     You will be logged into that account.")
             else:
+                # if the usernaame and password do not exist, add user to database 
                 manipulateBookstore("INSERT INTO BankAccount(balance) VALUES (0)")
                 result = queryBookstore("SELECT MAX(number) FROM BankAccount")
                 check = manipulateBookstore("INSERT INTO RegisteredUser VALUES ('"+username+"', '"+fName+"', '"+lName+"', '"+password+"', 'user', '"+address+"', "+str(result[0][0])+");")
                 if (check == False):
+                    #check for error
                     correct = False 
                     print("     An error occurred. Please try again.")
                     print()
@@ -198,9 +206,19 @@ def addBook():
                 if isbn == eBooks[i][0]:
                     uBook = False
             if uBook == True:
+                #unique book 
                 check1 = manipulateBookstore("INSERT INTO Book VALUES ('"+isbn+"', '"+genre+"', "+str(numPages)+", '"+title+"', "+str(numSold)+", "+str(quantity)+", "+str(buyPrice)+", "+str(sellPrice)+", "+str(year)+", "+str(percentage)+")")
                 check2 = manipulateBookstore("INSERT INTO StoreOrder(quantity, date, ISBN) VALUES ("+quantity+", '"+str(x.strftime("%x"))+"', '"+isbn+"')")
                 if (check1==False or check2==False):
+                    #check for errors 
+                    correct = False
+                    print("     An error occurred please try again.")
+                    print()
+                    break
+            else:
+                check10 = manipulateBookstore("UPDATE Book SET numStock="+quantity+"WHERE isbn='"+isbn+"'")
+                if (check10 == False):
+                    #check for errors 
                     correct = False
                     print("     An error occurred please try again.")
                     print()
@@ -210,12 +228,13 @@ def addBook():
             authors = queryBookstore("SELECT email FROM Author")
             uAuthor = True
             for j in range(0, len(authors)):
-                #print(authors[j][0])
                 if emailA == authors[j][0]:
                     uAuthor = False
             if uAuthor == True:
+                #unique author 
                 check3 = manipulateBookstore("INSERT INTO Author VALUES ('"+emailA+"', '"+fName+"', '"+lName+"')")
                 if (check3 == False):
+                    #check for errors
                     correct = False
                     print("     An error occurred please try again.")
                     print()
@@ -228,21 +247,29 @@ def addBook():
                 if emailP == publishers[k][0]:
                     uPublisher = False
             if uPublisher == True:
+                #unique publisher 
                 manipulateBookstore("INSERT INTO BankAccount(balance) VALUES (0)")
                 result = queryBookstore("SELECT MAX(number) FROM BankAccount")
                 check5 = manipulateBookstore("INSERT INTO Publisher VALUES ('"+emailP+"', '"+name+"', '"+address+"', '"+phoneNumber+"', "+str(result[0][0])+")")
                 if (check5 == False):
+                    #check for errors 
                     correct = False
                     print("     An error occurred please try again.")
                     print()
                     break
 
             if (uBook == False) :
+                #not a unique book 
                 if (uAuthor == True):
+                    #unique author 
+                    #add author book to database 
                     check6 = manipulateBookstore("INSERT INTO AuthorBook VALUES ('"+emailA+"', '"+isbn+"')")
                 if (uPublisher == True):
+                    #unique publisher 
+                    #add publisher book 
                     check7 = manipulateBookstore("INSERT INTO PublisherBook VALUES ('"+emailP+"', '"+isbn+"')")
                 if (check6 == False or check7 == False):
+                    #check for errors 
                     correct = False
                     print("     An error occurred please try again.")
                     print()
@@ -251,6 +278,7 @@ def addBook():
                 check8 = manipulateBookstore("INSERT INTO AuthorBook VALUES ('"+emailA+"', '"+isbn+"')")
                 check9 = manipulateBookstore("INSERT INTO PublisherBook VALUES ('"+emailP+"', '"+isbn+"')")
                 if (check8 == False or check9 == False):
+                    #check for errors 
                     correct = False
                     print("     An error occurred please try again.")
                     print()
@@ -258,7 +286,6 @@ def addBook():
             
         else:
             correct = False
-
 
     return 
 
